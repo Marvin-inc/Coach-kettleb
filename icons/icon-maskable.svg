@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#13171c"/>
+  <!-- Kettlebell : anse + corps -->
+  <g transform="translate(256 256) scale(.78) translate(-256 -256)"><path d="M176 214 C150 120 186 92 256 92 C326 92 362 120 336 214" fill="none" stroke="#f5c400" stroke-width="40" stroke-linecap="round"/>
+  <path d="M256 186 C350 186 404 248 404 318 C404 362 386 394 366 414 L146 414 C126 394 108 362 108 318 C108 248 162 186 256 186 Z" fill="#f5c400"/>
+  <!-- Col (montagne) découpé dans le corps -->
+  <path d="M150 378 L220 290 L250 326 L290 268 L362 378 Z" fill="#13171c"/>
+  <path d="M290 268 L306 291 L296 300 L285 288 L274 296 Z" fill="#f4f4f1"/>
+</g></svg>
