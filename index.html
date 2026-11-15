@@ -84,6 +84,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 ul.changes{margin:0;padding-left:18px}
 .hrbox{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .hrv{font-family:var(--display);font-weight:800;font-size:26px;color:var(--bad)}
+.hrlive{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--panel);border-radius:12px;padding:8px 12px;min-height:56px}
+.hrlive .hrv{font-size:38px;line-height:1}
+.hrlive .heart{color:var(--bad);font-size:26px}
 .linkbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;font-weight:600}
 .note{font-size:14px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -197,27 +200,44 @@ async function keepAwake(on){try{if(on&&"wakeLock" in navigator){wake=await navi
 /* ---------- Ceinture cardio (Bluetooth) ---------- */
 const HR={dev:null,bpm:0,at:0,msg:"",busy:false};
 function hrLive(){return HR.dev&&HR.bpm&&Date.now()-HR.at<5000?HR.bpm:0}
+function hrPaint(){const t=hrLive()||"--";document.querySelectorAll(".hrv-n").forEach(el=>el.textContent=t);}
+setInterval(()=>{if(HR.dev)hrPaint();},1000);
+async function hrAttach(dev){
+  const srv=await dev.gatt.connect();
+  const ch=await(await srv.getPrimaryService("heart_rate")).getCharacteristic("heart_rate_measurement");
+  ch.addEventListener("characteristicvaluechanged",ev=>{const v=ev.target.value,f=v.getUint8(0);HR.bpm=f&1?v.getUint16(1,true):v.getUint8(1);HR.at=Date.now();hrPaint();});
+  await ch.startNotifications();
+}
+async function hrReconnect(dev){
+  for(let k=0;k<5&&HR.dev===dev;k++){
+    HR.msg="Ceinture déconnectée, reconnexion…";render();
+    await new Promise(r=>setTimeout(r,1500*(k+1)));
+    try{await hrAttach(dev);HR.msg="";render();return;}catch(e){}
+  }
+  if(HR.dev===dev){HR.dev=null;HR.bpm=0;HR.msg="Ceinture déconnectée. Mouille les électrodes et reconnecte-la.";render();}
+}
 async function connectHr(){
   if(HR.busy)return;
-  if(!navigator.bluetooth){HR.msg="Bluetooth indisponible dans ce navigateur. Sur iPhone, aucun navigateur ne le permet ; sur Android, ouvre la page dans Chrome.";render();return;}
+  if(!navigator.bluetooth){HR.msg="Bluetooth indisponible dans ce navigateur. Sur iPhone, Safari et Chrome ne le permettent pas : ouvre la page dans l'appli Bluefy. Sur Android, ouvre-la dans Chrome.";render();return;}
   HR.busy=true;HR.msg="";render();
   try{
     const dev=await navigator.bluetooth.requestDevice({filters:[{services:["heart_rate"]}]});
-    const srv=await dev.gatt.connect();
-    const ch=await(await srv.getPrimaryService("heart_rate")).getCharacteristic("heart_rate_measurement");
-    ch.addEventListener("characteristicvaluechanged",ev=>{const v=ev.target.value,f=v.getUint8(0);HR.bpm=f&1?v.getUint16(1,true):v.getUint8(1);HR.at=Date.now();const el=document.getElementById("hrv");if(el)el.textContent=HR.bpm;});
-    await ch.startNotifications();
-    dev.addEventListener("gattserverdisconnected",()=>{HR.dev=null;HR.bpm=0;HR.msg="Ceinture déconnectée.";render();});
+    await hrAttach(dev);
+    dev.addEventListener("gattserverdisconnected",()=>{if(HR.dev===dev)hrReconnect(dev);});
     HR.dev=dev;HR.msg="";
   }catch(e){
     HR.msg=e&&e.name==="NotFoundError"?"Aucune ceinture choisie. Mouille les électrodes et réessaie.":e&&e.name==="SecurityError"?"Le Bluetooth est bloqué dans cette fenêtre. Ouvre la page dans Chrome sur Android ou sur ordinateur.":"Connexion impossible : "+(e&&e.message||"erreur inconnue");
   }
   HR.busy=false;render();
 }
+function hrPlayer(){
+  if(HR.dev)return `<div class="hrlive" aria-live="off"><span class="heart" aria-hidden="true">♥</span><span class="hrv num"><span class="hrv-n">${hrLive()||"--"}</span></span><span class="muted">bpm</span></div>`;
+  return `<div class="hrlive"><button class="linkbtn" id="hrc">${HR.busy?"Connexion…":"♥ Connecter la ceinture cardio"}</button></div>${HR.msg?`<div class="note" style="text-align:center">${esc(HR.msg)}</div>`:""}`;
+}
 function hrCard(){
   const live=hrLive();
   return `<div class="card"><div class="hrbox"><div><strong>Ceinture cardio</strong><div class="small muted">${HR.dev?esc(HR.dev.name||"Connectée"):"Non connectée : la séance sera enregistrée sans fréquence cardiaque"}</div></div>
-  ${HR.dev?`<span class="hrv num"><span id="hrv">${live||"--"}</span> <span class="small">bpm</span></span>`:`<button class="linkbtn" id="hrc">${HR.busy?"Connexion…":"Connecter"}</button>`}</div>
+  ${HR.dev?`<span class="hrv num"><span class="hrv-n">${live||"--"}</span> <span class="small">bpm</span></span>`:`<button class="linkbtn" id="hrc">${HR.busy?"Connexion…":"Connecter"}</button>`}</div>
   ${HR.msg?`<div class="note">${esc(HR.msg)}</div>`:""}</div>`;
 }
 
@@ -445,8 +465,9 @@ function renderPlayer(app){
   }
   const manual=st.kind==="work"&&!st.secs;
   app.innerHTML=`<div class="player">
-    <div class="row"><strong style="font-family:var(--display);font-size:22px;text-transform:uppercase">${esc(w.name)}</strong><span>${HR.dev?`<span class="hrv num" style="font-size:20px"><span id="hrv">${hrLive()||"--"}</span></span> · `:""}<span class="clock num" id="clock">${fmt(elapsed())}</span></span></div>
+    <div class="row"><strong style="font-family:var(--display);font-size:22px;text-transform:uppercase">${esc(w.name)}</strong><span><span class="clock num" id="clock">${fmt(elapsed())}</span></span></div>
     <div class="pbar" aria-label="Progression"><b style="width:${Math.round(doneW/works*100)}%"></b></div>
+    ${hrPlayer()}
     <div class="stage">${stage}</div>
     ${nxt&&st.kind==="work"?`<div class="next">Ensuite : ${esc(EX[nxt.id].n)} · ${esc(nxt.txt)}</div>`:""}
     <div class="ctrl"><button class="btn ghost" id="pause">${run.pauseAt?"Reprendre":"Pause"}</button>
@@ -454,6 +475,7 @@ function renderPlayer(app){
     <button class="btn ghost" id="quit">Arrêter la séance</button></div>`;
   $("#go").onclick=()=>{if(run.pauseAt)togglePause();next();};
   $("#pause").onclick=togglePause;
+  const hc=$("#hrc");if(hc)hc.onclick=connectHr;
   $("#quit").onclick=()=>{if(run.quitArm){quit();}else{run.quitArm=true;$("#quit").textContent="Appuie encore pour arrêter sans enregistrer";setTimeout(()=>{if(run){run.quitArm=false;const q=$("#quit");if(q)q.textContent="Arrêter la séance";}},3000);}};
 }
 function togglePause(){
