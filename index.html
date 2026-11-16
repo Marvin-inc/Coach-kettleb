@@ -78,7 +78,8 @@ nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accen
 details.tech{background:var(--panel);border-radius:10px;padding:10px 14px;text-align:left;font-size:15px}
 details.tech summary{font-weight:600;cursor:pointer}
 .next{color:var(--muted);font-size:15px;text-align:center}
-.ctrl{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.ctrl{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px}
+.ctrl .btn.ghost{padding:12px 4px}
 /* Retour */
 .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .choices button{border:2px solid var(--line);background:var(--panel);border-radius:10px;padding:14px 6px;font-weight:600}
@@ -246,6 +247,7 @@ function say(t){
 function sayStep(){
   if(!run)return;
   const st=run.steps[run.i];
+  if(st.trans){const n=run.steps[run.i+1];if(n)say("Ensuite, "+EX[n.id].n+".");return;}
   if(st.kind==="rest"){const n=run.steps.slice(run.i+1).find(x=>x.kind==="work");say("Récupération, "+st.secs+" secondes."+(n?" Ensuite, "+EX[n.id].n+".":""));}
   else say(EX[st.id].n+". "+st.say+".");
 }
@@ -254,7 +256,7 @@ function sayStep(){
 const RUNKEY="kbcoach.run";
 function saveRun(){
   if(!run)return;
-  try{localStorage.setItem(RUNKEY,JSON.stringify({wid:run.w.id,steps:run.steps,i:run.i,el:elapsed(),warmSec:run.warmSec||0,hr:run.hr,start:run.startIso,at:Date.now()}));run.lastSave=Date.now();}catch(e){}
+  try{localStorage.setItem(RUNKEY,JSON.stringify({wid:run.w.id,steps:run.steps,i:run.i,el:elapsed(),off:run.off||0,hr:run.hr,start:run.startIso,at:Date.now()}));run.lastSave=Date.now();}catch(e){}
 }
 function saveDone(){try{localStorage.setItem(RUNKEY,JSON.stringify({done:1,wid:fb.w.id,dur:fb.dur,work:fb.work,hr:fb.hr,start:fb.start,at:Date.now()}));}catch(e){}}
 function clearRun(){try{localStorage.removeItem(RUNKEY);}catch(e){}}
@@ -271,7 +273,7 @@ function resumeRun(){
   const w=WORKOUTS.find(x=>x.id===o.wid);
   if(o.done){fb={w,dur:o.dur,work:o.work||o.dur,difficulty:null,knee:0,start:o.start,hr:o.hr||null};view="feedback";return render();}
   audioOn();
-  run={w,steps:o.steps,i:o.i,t0:Date.now()-o.el*1000,hr:o.hr||[],startIso:o.start,paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,warmSec:o.warmSec||0,lastSave:Date.now()};
+  run={w,steps:o.steps,i:o.i,t0:Date.now()-o.el*1000,hr:o.hr||[],startIso:o.start,paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,off:o.off??o.warmSec??0,lastSave:Date.now()};
   keepAwake(true);beep(660,.2);
   view="player";render();sayStep();
   run.tick=setInterval(tick,250);
@@ -590,7 +592,7 @@ function histoList(){
   return `<div class="list">${S.sessions.slice(0,60).map(s=>{
     const k=s.knee>=4?"bad":s.knee>=2?"warn":"good";
     return `<div class="card"><div class="row"><h3 style="font-size:22px">${esc(s.workoutName)}</h3><span class="num">${fmt(wsec(s))}</span></div>
-    <div class="row small"><span class="muted">${dfmt(s.date)}${s.kg?" · "+s.kg+" kg":""}${s.workSec?" · avec échauffement":""}</span><span><span class="pill ${dl[s.difficulty]?.[1]||""}">${dl[s.difficulty]?.[0]||""}</span> <span class="pill ${k}">Genou ${s.knee}/10</span></span></div>
+    <div class="row small"><span class="muted">${dfmt(s.date)}${s.kg?" · "+s.kg+" kg":""}${s.workSec?" · temps net":""}</span><span><span class="pill ${dl[s.difficulty]?.[1]||""}">${dl[s.difficulty]?.[0]||""}</span> <span class="pill ${k}">Genou ${s.knee}/10</span></span></div>
     ${s.changes&&s.changes.length?`<div class="small muted">${s.changes.map(esc).join(" · ")}</div>`:""}
     <div class="row small"><span class="muted">${s.hrAvg?"FC moy. "+s.hrAvg+" · max "+s.hrMax+" bpm":"Sans fréquence cardiaque"}</span><button class="linkbtn" data-exp="${esc(s.id)}">Exporter pour intervals.icu</button></div></div>`}).join("")}</div>
     <p class="note">L'export donne un fichier .fit (séance de renforcement). Sur intervals.icu, importe-le tel quel depuis la page Activités.</p>`;
@@ -606,6 +608,7 @@ function levelsTab(){
 
 /* ---------- Construction et lecture d'une séance ---------- */
 function spoken(e,a,timed){return (timed?a+" secondes":a+" répétition"+(a>1?"s":""))+(e.side?" par "+e.side:"");}
+const TRANS=5;
 function buildSteps(w,warm){
   const steps=[];
   if(warm&&!w.daily)WARMUP.forEach((id,k)=>{const e=EX[id],[label,a]=e.L[0];steps.push({kind:"work",id,r:0,warm:1,label:"Échauffement "+(k+1)+"/"+WARMUP.length,secs:a,timed:true,txt:a+" s",say:(k?"":"Échauffement. ")+a+" secondes"});});
@@ -623,7 +626,11 @@ function buildSteps(w,warm){
       }
     });
   }
-  return steps;
+  if(w.mode!=="chrono")return steps;
+  /* Parcours sans récupération : 5 s pour se mettre en place entre deux exercices, hors chrono. */
+  const out=[];
+  steps.forEach((st,k)=>{if(k>0&&!st.warm)out.push({kind:"rest",trans:1,secs:TRANS});out.push(st);});
+  return out;
 }
 function estimate(w,warm){
   let t=0;
@@ -638,7 +645,7 @@ function toggleRow(id,on,title,sub){return `<button class="toggle" id="${id}" ar
 function renderPreview(app){
   const w=WORKOUTS.find(x=>x.id===pv),warm=S.settings.warm&&!w.daily;
   const mins=Math.max(1,Math.round(estimate(w,warm)/60));
-  const rule=w.mode==="intervals"?w.work+" s d'effort, "+w.rest+" s de repos":w.mode==="series"?w.rest+" s de repos entre les exercices":"Enchaîne sans repos imposé, le chrono tourne";
+  const rule=w.mode==="intervals"?w.work+" s d'effort, "+w.rest+" s de repos":w.mode==="series"?w.rest+" s de repos entre les exercices":"Pas de récupération : "+TRANS+" s de transition entre les exercices pour te mettre en place, hors chrono";
   const exs=w.ex.map(id=>{const e=EX[id];return `<div class="exrow">${fig(id,"thumb")}<div><strong>${esc(e.n)}</strong>${e.knee?' <span class="pill warn">genou</span>':""}<div class="small muted">${esc(e.L[lvl(id)][0])} · ${w.mode==="intervals"?w.work+" s":amountTxt(id)}</div></div></div>`;}).join("");
   const wu=warm?`<div class="card"><h2>Échauffement</h2><div class="small muted">Sans charge, ${fmt(WARMUP.reduce((a,id)=>a+EX[id].L[0][1],0))}. Ne compte pas dans ton temps.</div>${WARMUP.map(id=>`<div class="exrow">${fig(id,"thumb")}<div><strong>${esc(EX[id].n)}</strong><div class="small muted">${EX[id].L[0][1]} s</div></div></div>`).join("")}</div>`:"";
   app.innerHTML=`<div class="wrap"><div><button class="linkbtn" id="back">← Tous les cols</button></div>
@@ -658,13 +665,14 @@ function renderPreview(app){
 function startWorkout(wid){
   const w=WORKOUTS.find(x=>x.id===wid);
   audioOn();
-  run={w,steps:buildSteps(w,S.settings.warm),i:0,t0:Date.now(),hr:[],startIso:new Date().toISOString(),paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,warmSec:0,lastSave:0};
+  run={w,steps:buildSteps(w,S.settings.warm),i:0,t0:Date.now(),hr:[],startIso:new Date().toISOString(),paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,off:0,lastSave:0};
   keepAwake(true);beep(660,.2);
   view="player";render();window.scrollTo(0,0);sayStep();saveRun();
   run.tick=setInterval(tick,250);
 }
 function elapsed(){return ((run.pauseAt||Date.now())-run.t0-run.paused)/1000}
-function shown(){const st=run.steps[run.i];return st&&st.warm?elapsed():elapsed()-(run.warmSec||0)}
+const offStep=st=>!!st&&(st.warm||st.trans);
+function shown(){const st=run.steps[run.i];if(st&&st.warm)return elapsed();return elapsed()-(run.off||0)-(offStep(st)?stepElapsed():0)}
 function stepElapsed(){return ((run.pauseAt||Date.now())-run.stepStart)/1000}
 function tick(){
   if(!run||run.pauseAt)return;
@@ -680,19 +688,33 @@ function tick(){
   updateClock();
   if(Date.now()-run.lastSave>5000)saveRun();
 }
+function goTo(j){
+  const cur=run.steps[run.i];
+  if(offStep(cur))run.off=(run.off||0)+stepElapsed();
+  run.i=j;run.stepStart=Date.now();run.lastBeep=-1;run.half=false;
+}
 function next(){
   if(!run)return;
-  const prev=run.steps[run.i];
-  run.i++;run.stepStart=Date.now();run.lastBeep=-1;run.half=false;
-  if(prev&&prev.warm&&!(run.steps[run.i]&&run.steps[run.i].warm))run.warmSec=elapsed();
+  goTo(run.i+1);
   if(run.i>=run.steps.length){finish();return;}
   beep(run.steps[run.i].kind==="rest"?440:990,.18);
   render();sayStep();saveRun();
 }
+function prevTarget(){
+  /* Exercice précédent : on saute les repos et transitions. Depuis un repos, on revient à l'exercice qui le précède. */
+  for(let j=run.i-1;j>=0;j--)if(run.steps[j].kind==="work")return j;
+  return -1;
+}
+function back(){
+  if(!run)return;
+  const j=prevTarget();if(j<0)return;
+  goTo(j);
+  beep(990,.18);render();sayStep();saveRun();
+}
 function finish(){
   clearInterval(run.tick);keepAwake(false);beep(990,.4);
   const hr=Array.from({length:Math.round(elapsed())+1},(_,i)=>run.hr[i]||0);
-  const dur=Math.round(elapsed()),ws=Math.round(run.warmSec||0);
+  const dur=Math.round(elapsed()),ws=Math.round(run.off||0);
   fb={w:run.w,dur,work:Math.max(1,dur-ws),difficulty:null,knee:0,start:run.startIso,hr:hr.some(x=>x)?hr:null};
   run=null;saveDone();say("Séance terminée. Bravo !");view="feedback";render();
 }
@@ -707,7 +729,13 @@ function renderPlayer(app){
   const works=steps.filter(s=>s.kind==="work").length,doneW=steps.slice(0,i).filter(s=>s.kind==="work").length;
   const nxt=steps.slice(i+1).find(s=>s.kind==="work");
   let stage;
-  if(st.kind==="rest"){
+  if(st.trans){
+    stage=`<div class="phase">Transition · mets-toi en place</div>
+    <div class="exname">${esc(EX[nxt.id].n)}</div>
+    ${fig(nxt.id,"big")}
+    <div class="amount rest num" id="amount">${fmt(st.secs)}</div>
+    <div class="muted">À faire : ${esc(nxt.txt)}${EX[nxt.id].u==="reps"?" répétitions":""}</div>`;
+  }else if(st.kind==="rest"){
     stage=`<div class="phase">Récupération</div><div class="amount rest num" id="amount">${fmt(st.secs)}</div>
     ${nxt?`<div class="cue">Ensuite : <strong>${esc(EX[nxt.id].n)}</strong> · ${esc(nxt.txt)}</div>`:""}`;
   }else{
@@ -727,10 +755,11 @@ function renderPlayer(app){
     ${hrPlayer()}
     <div class="stage">${stage}</div>
     ${nxt&&st.kind==="work"?`<div class="next">Ensuite : ${esc(EX[nxt.id].n)} · ${esc(nxt.txt)}</div>`:""}
-    <div class="ctrl"><button class="btn ghost" id="pause">${run.pauseAt?"Reprendre":"Pause"}</button>
-    <button class="btn" id="go">${manual?"Fait":st.kind==="rest"?"Passer le repos":"Suivant"}</button></div>
+    <div class="ctrl"><button class="btn ghost" id="prev" aria-label="Exercice précédent" ${prevTarget()<0?"disabled":""}>◀ Préc.</button><button class="btn ghost" id="pause">${run.pauseAt?"Reprendre":"Pause"}</button>
+    <button class="btn" id="go">${manual?"Fait":st.trans?"Go":st.kind==="rest"?"Passer le repos":"Suivant"}</button></div>
     <button class="btn ghost" id="quit">Arrêter la séance</button></div>`;
   $("#go").onclick=()=>{if(run.pauseAt)togglePause();next();};
+  $("#prev").onclick=()=>{if(run.pauseAt)togglePause();back();};
   $("#pause").onclick=togglePause;
   $("#voice").onclick=()=>{S.settings.voice=!S.settings.voice;saveLocal();if(!S.settings.voice){try{speechSynthesis.cancel();}catch(e){}}render();if(S.settings.voice)sayStep();};
   const hc=$("#hrc");if(hc)hc.onclick=connectHr;const hx=$("#hrx");if(hx)hx.onclick=()=>hrDisconnect();
@@ -745,7 +774,7 @@ function togglePause(){
 function renderFeedback(app){
   const w=fb.w,pb=best(w.id),isPb=w.mode==="chrono"&&(!pb||fb.work<pb);
   app.innerHTML=`<div class="wrap"><div class="card" style="text-align:center"><div class="muted">${esc(w.name)} terminé</div>
-    <div class="knee num">${fmt(fb.work)}</div>${fb.dur>fb.work?`<div class="small muted">+ ${fmt(fb.dur-fb.work)} d'échauffement</div>`:""}${w.mode==="chrono"?(isPb?'<span class="pill good">Nouveau record</span>':`<span class="muted small">Record : ${fmt(pb)}</span>`):""}</div>
+    <div class="knee num">${fmt(fb.work)}</div>${fb.dur>fb.work?`<div class="small muted">+ ${fmt(fb.dur-fb.work)} hors chrono (échauffement, transitions)</div>`:""}${w.mode==="chrono"?(isPb?'<span class="pill good">Nouveau record</span>':`<span class="muted small">Record : ${fmt(pb)}</span>`):""}</div>
     ${w.daily?"":`<div class="card"><h2>Difficulté</h2><div class="choices">${[["facile","Trop facile"],["parfait","Parfait"],["dur","Trop dur"]].map(([k,l])=>`<button data-diff="${k}" aria-pressed="${fb.difficulty===k}">${l}</button>`).join("")}</div></div>`}
     <div class="card"><div class="row"><h2>Genou</h2><span class="knee num" id="kv">${fb.knee}/10</span></div>
     <label for="knee" class="small muted">Gêne ou douleur à l'avant du genou pendant la séance</label>
