@@ -1,6 +1,6 @@
-# Coach Kettlebell 8 kg
+# Coach Kettlebell
 
-Application web (une seule page) de séances kettlebell guidées : chrono, intervalles, progression par niveaux, cardio Bluetooth et export FIT.
+Application web (une seule page) de séances kettlebell guidées : aperçu de la séance, échauffement, annonces vocales, schémas des exercices, chrono et intervalles, progression par niveaux, suivi hebdomadaire, cardio Bluetooth et export FIT.
 
 ## Ouvrir l'application
 
@@ -31,5 +31,6 @@ Les séances et niveaux sont enregistrés dans le navigateur (localStorage). Uti
 | `index.html` | L'application |
 | `manifest.webmanifest` | Nom, couleurs et icônes pour l'installation |
 | `sw.js` | Service worker : fonctionnement hors ligne |
+| `fonts/` | Polices Barlow embarquées (licence OFL) |
 | `icons/` | Icônes (SVG source, PNG 192/512, maskable, Apple touch) |
 | `.github/workflows/pages.yml` | Déploiement automatique sur GitHub Pages |

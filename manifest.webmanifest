@@ -1,7 +1,7 @@
 {
-  "name": "Coach Kettlebell 8 kg",
+  "name": "Coach Kettlebell",
   "short_name": "Coach KB",
-  "description": "Séances kettlebell 8 kg guidées, avec chrono, progression et export FIT.",
+  "description": "Séances kettlebell guidées, avec chrono, progression et export FIT.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
