@@ -335,7 +335,7 @@ function fig(id,cls){
 }
 
 /* ---------- Ceinture cardio (Bluetooth) ---------- */
-const HR={dev:null,bpm:0,at:0,since:0,msg:"",busy:false};
+const HR={dev:null,bpm:0,at:0,since:0,msg:"",busy:false,bat:null};
 function hrLive(){return HR.dev&&HR.bpm&&Date.now()-HR.at<5000?HR.bpm:0}
 const HR_WAIT="Connectée, en attente du signal : mets la ceinture et mouille bien les électrodes.";
 function hrWaiting(){return !!HR.dev&&!hrLive()&&Date.now()-HR.since>3000}
@@ -344,7 +344,7 @@ function hrPaint(){
   const w=hrWaiting();document.querySelectorAll(".hr-wait").forEach(el=>el.hidden=!w);
 }
 function hrDisconnect(silent){
-  const d=HR.dev;HR.dev=null;HR.bpm=0;HR.msg="";
+  const d=HR.dev;HR.dev=null;HR.bpm=0;HR.bat=null;HR.msg="";
   try{if(d&&d.gatt&&d.gatt.connected)d.gatt.disconnect();}catch(e){}
   if(!silent)render();
 }
@@ -356,21 +356,32 @@ async function hrAttach(dev){
   const ch=await(await srv.getPrimaryService("heart_rate")).getCharacteristic("heart_rate_measurement");
   ch.addEventListener("characteristicvaluechanged",ev=>{const v=ev.target.value,f=v.getUint8(0);HR.bpm=f&1?v.getUint16(1,true):v.getUint8(1);HR.at=Date.now();hrPaint();});
   await ch.startNotifications();
+  /* Niveau de pile : service standard, absent sur certaines ceintures. */
+  try{
+    const bc=await(await srv.getPrimaryService("battery_service")).getCharacteristic("battery_level");
+    const setBat=v=>{const b=v.getUint8(0);if(b!==HR.bat){HR.bat=b;render();}};
+    setBat(await bc.readValue());
+    bc.addEventListener("characteristicvaluechanged",ev=>setBat(ev.target.value));
+    try{await bc.startNotifications();}catch(e){}
+  }catch(e){HR.bat=null;}
 }
+function batTxt(){return HR.bat==null?"":"pile "+HR.bat+" %";}
+function batLow(){return HR.dev&&HR.bat!=null&&HR.bat<=20;}
+const batWarn=()=>batLow()?`<div class="note" style="color:var(--warn)">Pile de la ceinture faible (${HR.bat} %) : elle risque de décrocher, pense à la changer.</div>`:"";
 async function hrReconnect(dev){
   for(let k=0;k<5&&HR.dev===dev;k++){
     HR.msg="Ceinture déconnectée, reconnexion…";render();
     await new Promise(r=>setTimeout(r,1500*(k+1)));
     try{await hrAttach(dev);HR.since=Date.now();HR.msg="";render();return;}catch(e){}
   }
-  if(HR.dev===dev){HR.dev=null;HR.bpm=0;HR.msg="Ceinture déconnectée. Mouille les électrodes et reconnecte-la.";render();}
+  if(HR.dev===dev){HR.dev=null;HR.bpm=0;HR.bat=null;HR.msg="Ceinture déconnectée. Mouille les électrodes et reconnecte-la.";render();}
 }
 async function connectHr(){
   if(HR.busy)return;
   if(!navigator.bluetooth){HR.msg="Bluetooth indisponible dans ce navigateur. Sur iPhone, Safari et Chrome ne le permettent pas : ouvre la page dans l'appli Bluefy. Sur Android, ouvre-la dans Chrome.";render();return;}
   HR.busy=true;HR.msg="";render();
   try{
-    const dev=await navigator.bluetooth.requestDevice({filters:[{services:["heart_rate"]}]});
+    const dev=await navigator.bluetooth.requestDevice({filters:[{services:["heart_rate"]}],optionalServices:["battery_service"]});
     await hrAttach(dev);
     dev.addEventListener("gattserverdisconnected",()=>{if(HR.dev===dev)hrReconnect(dev);});
     HR.dev=dev;HR.since=Date.now();HR.msg="";
@@ -380,14 +391,14 @@ async function connectHr(){
   HR.busy=false;render();
 }
 function hrPlayer(){
-  if(HR.dev)return `<div class="hrlive" aria-live="off"><span class="heart" aria-hidden="true">♥</span><span class="hrv num"><span class="hrv-n">${hrLive()||"--"}</span></span><span class="muted">bpm</span></div><div class="note hr-wait" style="text-align:center"${hrWaiting()?"":" hidden"}>${HR_WAIT}</div>${HR.msg?`<div class="note" style="text-align:center">${esc(HR.msg)}</div>`:""}`;
+  if(HR.dev)return `<div class="hrlive" aria-live="off"><span class="heart" aria-hidden="true">♥</span><span class="hrv num"><span class="hrv-n">${hrLive()||"--"}</span></span><span class="muted">bpm${batLow()?" · "+batTxt():""}</span></div><div class="note hr-wait" style="text-align:center"${hrWaiting()?"":" hidden"}>${HR_WAIT}</div>${HR.msg?`<div class="note" style="text-align:center">${esc(HR.msg)}</div>`:""}`;
   return `<div class="hrlive"><button class="linkbtn" id="hrc">${HR.busy?"Connexion…":"♥ Connecter la ceinture cardio"}</button></div>${HR.msg?`<div class="note" style="text-align:center">${esc(HR.msg)}</div>`:""}`;
 }
 function hrCard(){
   const live=hrLive();
-  return `<div class="card"><div class="hrbox"><div><strong>Ceinture cardio</strong><div class="small muted">${HR.dev?esc(HR.dev.name||"Connectée"):"Non connectée : la séance sera enregistrée sans fréquence cardiaque"}</div></div>
+  return `<div class="card"><div class="hrbox"><div><strong>Ceinture cardio</strong><div class="small muted">${HR.dev?esc(HR.dev.name||"Connectée")+(HR.bat!=null?" · "+batTxt():""):"Non connectée : la séance sera enregistrée sans fréquence cardiaque"}</div></div>
   ${HR.dev?`<span class="row"><span class="hrv num"><span class="hrv-n">${live||"--"}</span> <span class="small">bpm</span></span><button class="linkbtn" id="hrx">Déconnecter</button></span>`:`<button class="linkbtn" id="hrc">${HR.busy?"Connexion…":"Connecter"}</button>`}</div>
-  <div class="note hr-wait"${hrWaiting()?"":" hidden"}>${HR_WAIT}</div>
+  <div class="note hr-wait"${hrWaiting()?"":" hidden"}>${HR_WAIT}</div>${batWarn()}
   ${HR.msg?`<div class="note">${esc(HR.msg)}</div>`:""}</div>`;
 }
 
