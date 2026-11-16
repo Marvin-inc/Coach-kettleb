@@ -415,7 +415,8 @@ function buildFit(s){
   const avg=valid.length?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):255,max=valid.length?Math.max(...valid):255;
   def(0,0,[[0,1,0],[1,2,0x84],[2,2,0x84],[4,4,0x86]]);rec(0,[4,255,0,end]);
   def(1,21,[[253,4,0x86],[0,1,0],[1,1,0]]);rec(1,[start,0,0]);
-  if(valid.length){def(2,20,[[253,4,0x86],[3,1,2]]);hr.forEach((b,i)=>{if(b>0&&i<=dur)rec(2,[start+i,b]);});}
+  /* Un point par seconde, même sans cardio (255 = valeur absente) : certains sites refusent une activité sans aucun point. */
+  def(2,20,[[253,4,0x86],[3,1,2]]);for(let i=0;i<=dur;i++)rec(2,[start+i,hr[i]>0?hr[i]:255]);
   rec(1,[end,0,4]);
   def(3,19,[[253,4,0x86],[2,4,0x86],[7,4,0x86],[8,4,0x86],[0,1,0],[1,1,0],[15,1,2],[16,1,2],[25,1,0],[39,1,0]]);rec(3,[end,start,dur*1000,dur*1000,9,1,avg,max,10,20]);
   def(4,18,[[253,4,0x86],[2,4,0x86],[7,4,0x86],[8,4,0x86],[0,1,0],[1,1,0],[5,1,0],[6,1,0],[16,1,2],[17,1,2],[25,2,0x84],[26,2,0x84]]);rec(4,[end,start,dur*1000,dur*1000,8,1,10,20,avg,max,0,1]);
@@ -442,7 +443,9 @@ let dl=null;
 async function exportSession(id,btn){
   const s=S.sessions.find(x=>x.id===id);if(!s)return;
   const base=(s.start||s.date).slice(0,10)+"_"+s.workoutName.normalize("NFD").replace(/[^A-Za-z0-9]+/g,"-");
-  await saveFile(base+".zip",zipOne(base+".fit",buildFit(s)),"application/zip",btn);
+  /* Sur le site : le .fit directement. Dans l'artifact Claude, seul le .zip peut être enregistré. */
+  if(window.claude&&window.claude.use)await saveFile(base+".zip",zipOne(base+".fit",buildFit(s)),"application/zip",btn);
+  else await saveFile(base+".fit",buildFit(s),"application/octet-stream",btn);
 }
 async function saveFile(name,data,type,btn){
   if(!(window.claude&&window.claude.use)){
@@ -590,7 +593,7 @@ function histoList(){
     <div class="row small"><span class="muted">${dfmt(s.date)}${s.kg?" · "+s.kg+" kg":""}${s.workSec?" · avec échauffement":""}</span><span><span class="pill ${dl[s.difficulty]?.[1]||""}">${dl[s.difficulty]?.[0]||""}</span> <span class="pill ${k}">Genou ${s.knee}/10</span></span></div>
     ${s.changes&&s.changes.length?`<div class="small muted">${s.changes.map(esc).join(" · ")}</div>`:""}
     <div class="row small"><span class="muted">${s.hrAvg?"FC moy. "+s.hrAvg+" · max "+s.hrMax+" bpm":"Sans fréquence cardiaque"}</span><button class="linkbtn" data-exp="${esc(s.id)}">Exporter pour intervals.icu</button></div></div>`}).join("")}</div>
-    <p class="note">L'export donne un fichier .zip contenant un .fit (séance de renforcement). Sur intervals.icu, importe-le tel quel depuis la page Activités.</p>`;
+    <p class="note">L'export donne un fichier .fit (séance de renforcement). Sur intervals.icu, importe-le tel quel depuis la page Activités.</p>`;
 }
 function levelsTab(){
   const ids=Object.keys(EX).filter(id=>!EX[id].fixed);
