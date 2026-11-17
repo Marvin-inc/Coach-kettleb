@@ -94,6 +94,7 @@ ul.changes{margin:0;padding-left:18px}
 .hrlive .heart{color:var(--bad);font-size:26px}
 .linkbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;font-weight:600}
 .note{font-size:14px;color:var(--muted)}
+.linkbtn:disabled{opacity:.4;cursor:default}
 .fig{display:block;background:var(--bg);border-radius:10px}
 .fig line,.fig polyline{stroke-linecap:round;stroke-linejoin:round;fill:none}
 .fig .ff{stroke:var(--ink);stroke-width:4}.fig .fb{stroke:#6f7c89;stroke-width:4}
@@ -429,25 +430,55 @@ function buildFit(s){
   return new Uint8Array(all);
 }
 const CRC32=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c>>>0;}return b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=t[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;};})();
-function zipOne(name,data){
-  const nm=new TextEncoder().encode(name),crc=CRC32(data),sz=data.length;
+function zipFiles(files){
   const u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255];
   const dt=new Date(),tm=(dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()>>1),dd=((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate();
-  const loc=[...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dd),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)];
-  const cen=[...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dd),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(0)];
-  const off=loc.length+nm.length+sz,cl=cen.length+nm.length;
-  const end=[...u32(0x06054b50),...u16(0),...u16(0),...u16(1),...u16(1),...u32(cl),...u32(off),...u16(0)];
-  const out=new Uint8Array(off+cl+end.length);let p=0;
-  for(const part of [loc,nm,data,cen,nm,end]){out.set(part,p);p+=part.length;}
+  const parts=[],cens=[];let off=0;
+  for(const {name,data} of files){
+    const nm=new TextEncoder().encode(name),crc=CRC32(data),sz=data.length;
+    const loc=[...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dd),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)];
+    cens.push([...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dd),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)],nm);
+    parts.push(loc,nm,data);off+=loc.length+nm.length+sz;
+  }
+  const cl=cens.reduce((a,x)=>a+x.length,0);
+  const end=[...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cl),...u32(off),...u16(0)];
+  const all=parts.concat(cens,[end]),out=new Uint8Array(all.reduce((a,x)=>a+x.length,0));let p=0;
+  for(const part of all){out.set(part,p);p+=part.length;}
   return out;
 }
+const zipOne=(name,data)=>zipFiles([{name,data}]);
 let dl=null;
+const fitBase=s=>(s.start||s.date).slice(0,10)+"_"+s.workoutName.normalize("NFD").replace(/[^A-Za-z0-9]+/g,"-");
+async function markExported(list){
+  const t=new Date().toISOString();list.forEach(s=>s.exportedAt=t);saveLocal();
+  if(db&&syncState==="db"){try{for(const s of list)await db.collection("sessions").doc(s.id).set(s);}catch(e){syncState="local";}}
+}
 async function exportSession(id,btn){
   const s=S.sessions.find(x=>x.id===id);if(!s)return;
-  const base=(s.start||s.date).slice(0,10)+"_"+s.workoutName.normalize("NFD").replace(/[^A-Za-z0-9]+/g,"-");
+  const base=fitBase(s);
   /* Sur le site : le .fit directement. Dans l'artifact Claude, seul le .zip peut être enregistré. */
   if(window.claude&&window.claude.use)await saveFile(base+".zip",zipOne(base+".fit",buildFit(s)),"application/zip",btn);
   else await saveFile(base+".fit",buildFit(s),"application/octet-stream",btn);
+  await markExported([s]);
+}
+/* Export groupé : un .zip qui contient un .fit par séance. */
+let bulkMsg="";
+async function exportMany(which,btn){
+  const list=which==="new"?S.sessions.filter(s=>!s.exportedAt):S.sessions.slice();
+  if(!list.length){bulkMsg="Aucune séance à exporter.";return render();}
+  const used={};
+  const files=list.slice().reverse().map(s=>{let n=fitBase(s);used[n]=(used[n]||0)+1;if(used[n]>1)n+="_"+used[n];return {name:n+".fit",data:buildFit(s)};});
+  await saveFile("coach-kettlebell_"+new Date().toISOString().slice(0,10)+"_"+files.length+"-seances.zip",zipFiles(files),"application/zip",btn);
+  await markExported(list);
+  bulkMsg=files.length+" séance(s) dans le fichier .zip. Décompresse-le sur ton ordinateur, puis importe les .fit sur le site Strava ou intervals.icu.";
+  render();
+}
+function bulkCard(){
+  if(!S.sessions.length)return "";
+  const nNew=S.sessions.filter(s=>!s.exportedAt).length;
+  return `<div class="card"><h2>Exporter plusieurs séances</h2><p class="note" style="margin:0">Un seul fichier .zip qui contient un .fit par séance. Envoie-le sur ton ordinateur, décompresse-le et importe les .fit sur le site web de Strava (jusqu'à 25 à la fois) ou d'intervals.icu.</p>
+  <div class="row"><button class="linkbtn" data-bulk="new" ${nNew?"":"disabled"}>Pas encore exportées (${nNew})</button><button class="linkbtn" data-bulk="all">Toutes (${S.sessions.length})</button></div>
+  ${bulkMsg?`<div class="note">${esc(bulkMsg)}</div>`:""}</div>`;
 }
 async function saveFile(name,data,type,btn){
   if(!(window.claude&&window.claude.use)){
@@ -504,7 +535,8 @@ function render(){
   const hc=$("#hrc");if(hc)hc.onclick=connectHr;const hx=$("#hrx");if(hx)hx.onclick=()=>hrDisconnect();
   const ej=$("#expjson");if(ej)ej.onclick=()=>exportJson(ej);
   const ij=$("#impjson");if(ij)ij.onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importJson(f);};
-  app.querySelectorAll("[data-exp]").forEach(b=>b.onclick=()=>exportSession(b.dataset.exp,b));
+  app.querySelectorAll("[data-exp]").forEach(b=>b.onclick=async()=>{await exportSession(b.dataset.exp,b);render();});
+  app.querySelectorAll("[data-bulk]").forEach(b=>b.onclick=()=>exportMany(b.dataset.bulk,b));
   app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
   app.querySelectorAll("[data-start]").forEach(b=>b.onclick=()=>{pv=b.dataset.start;view="preview";render();window.scrollTo(0,0);});
   const rs=$("#resume");if(rs)rs.onclick=resumeRun;
@@ -583,7 +615,7 @@ function statsCard(){
   ${recs?`<h3 style="font-size:18px;margin-top:6px">Temps sur les cols <span class="muted small" style="text-transform:none;font-family:var(--body);font-weight:400">premier → record</span></h3>${recs}`:""}</div>`;
 }
 function histoTab(){
-  return statsCard()+histoList()+backupCard();
+  return statsCard()+bulkCard()+histoList()+backupCard();
 }
 function histoList(){
   if(!S.sessions.length)return `<div class="card"><h2>Aucune séance</h2><p class="muted">Lance ton premier col depuis l'onglet Séances. Tes temps et tes notes apparaîtront ici.</p></div>`;
@@ -594,8 +626,8 @@ function histoList(){
     return `<div class="card"><div class="row"><h3 style="font-size:22px">${esc(s.workoutName)}</h3><span class="num">${fmt(wsec(s))}</span></div>
     <div class="row small"><span class="muted">${dfmt(s.date)}${s.kg?" · "+s.kg+" kg":""}${s.workSec?" · temps net":""}</span><span><span class="pill ${dl[s.difficulty]?.[1]||""}">${dl[s.difficulty]?.[0]||""}</span> <span class="pill ${k}">Genou ${s.knee}/10</span></span></div>
     ${s.changes&&s.changes.length?`<div class="small muted">${s.changes.map(esc).join(" · ")}</div>`:""}
-    <div class="row small"><span class="muted">${s.hrAvg?"FC moy. "+s.hrAvg+" · max "+s.hrMax+" bpm":"Sans fréquence cardiaque"}</span><button class="linkbtn" data-exp="${esc(s.id)}">Exporter pour intervals.icu</button></div></div>`}).join("")}</div>
-    <p class="note">L'export donne un fichier .fit (séance de renforcement). Sur intervals.icu, importe-le tel quel depuis la page Activités.</p>`;
+    <div class="row small"><span class="muted">${s.hrAvg?"FC moy. "+s.hrAvg+" · max "+s.hrMax+" bpm":"Sans fréquence cardiaque"}</span><button class="linkbtn" data-exp="${esc(s.id)}">${s.exportedAt?"Exporté ✓ · Réexporter":"Exporter le .fit"}</button></div></div>`}).join("")}</div>
+    <p class="note">Chaque export donne un fichier .fit (séance de renforcement). Importe-le depuis le site web de Strava (+ → Importer une activité → Fichier) ou d'intervals.icu (page Activités) : les applis mobiles ne savent pas importer de fichier.</p>`;
 }
 function levelsTab(){
   const ids=Object.keys(EX).filter(id=>!EX[id].fixed);
