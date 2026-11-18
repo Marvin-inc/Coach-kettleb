@@ -6,7 +6,9 @@ Application web (une seule page) de séances kettlebell guidées : aperçu de la
 
 Une fois GitHub Pages activé (voir plus bas), l'app est en ligne ici :
 
-**https://marvin-inc.github.io/coach-kettleb/**
+**https://marvin-inc.github.io/Coach-kettleb/**
+
+Attention aux majuscules : l'adresse doit contenir `Coach-kettleb` avec un C majuscule, sinon GitHub renvoie une erreur 404.
 
 ## L'installer sur le téléphone
 
