@@ -127,26 +127,28 @@ ul.changes{margin:0;padding-left:18px}
 "use strict";
 /* ---------- Données ---------- */
 const EX = {
-  goblet_squat:{n:"Goblet squat",knee:1,u:"reps",L:[["Descente 3 s",10],["Pause 2 s en bas",12],["Talons surélevés, pause 2 s",12],["Répétitions 1,5",10]],c:"KB contre la poitrine, descends en 3 s, coudes entre les genoux.",t:"Pieds un peu plus larges que les épaules. Descends le plus bas possible en gardant les talons au sol et le dos droit, puis remonte en poussant dans tout le pied."},
-  split_squat:{n:"Split squat bulgare",knee:1,u:"reps",side:"jambe",L:[["Fente fixe au sol",8],["Pied arrière sur une chaise",8],["Pied arrière sur une chaise",12],["Répétitions 1,5",8]],c:"Commence par la jambe opérée. Descente 3 s, genou arrière qui frôle le sol.",t:"Le pied arrière sert d'appui, c'est la jambe avant qui pousse. Laisse le genou avant avancer au-delà des orteils s'il le veut."},
-  step_up:{n:"Montée de marche",knee:1,u:"reps",side:"jambe",L:[["Marche basse",10],["Box à hauteur de genou",10],["Box genou, descente 4 s",10],["Box haute, descente 3 s",10]],c:"Pousse uniquement avec la jambe du haut, redescends lentement.",t:"KB en goblet. Pose tout le pied sur la box. Le pied resté au sol ne doit presque rien pousser."},
-  reverse_lunge:{n:"Fente arrière",knee:1,u:"reps",side:"jambe",L:[["Sans KB",8],["KB en goblet",10],["Pied avant sur une marche",8],["Pied avant sur une marche",12]],c:"Grand pas en arrière, genou arrière qui frôle le sol.",t:"Remonte en poussant dans le talon avant et ramène le pied. Le buste reste droit."},
-  swing:{n:"Swing à deux mains",knee:0,u:"reps",L:[["Swing",10],["Swing",15],["Swing",20],["Swing",25]],c:"Mouvement de hanche : les hanches projettent le KB, pas les bras.",t:"Lance le KB entre les jambes, puis pousse les hanches vers l'avant d'un coup sec. Le KB monte à hauteur de poitrine, bras relâchés. Ne plie pas les genoux comme dans un squat."},
-  rdl1:{n:"Soulevé de terre roumain, une jambe",knee:0,u:"reps",side:"jambe",L:[["Main sur un mur",8],["Libre",10],["Libre",12],["Pause 2 s en bas",10]],c:"KB dans la main opposée, dos plat, la jambe libre recule.",t:"Penche le buste comme une balançoire jusqu'à sentir l'arrière de la cuisse. Les hanches restent face au sol. Remonte en serrant la fesse."},
-  pushup:{n:"Pompes",knee:0,u:"reps",L:[["Mains surélevées",10],["Au sol",10],["Au sol",15],["Pieds surélevés",12]],c:"Corps gainé, coudes à 45°.",t:"Descends la poitrine à quelques centimètres du sol puis repousse. Le bassin ne tombe pas."},
-  row:{n:"Rowing un bras",knee:0,u:"reps",side:"bras",L:[["Rowing",10],["Rowing",12],["Rowing",15],["Descente 3 s",12]],c:"Main libre sur une chaise, coude vers la hanche.",t:"Dos plat et parallèle au sol. Tire le KB vers la hanche en serrant l'omoplate, sans tourner le buste."},
-  press:{n:"Développé un bras, genou au sol",knee:0,u:"reps",side:"bras",L:[["Développé",8],["Développé",10],["Développé",12],["Descente 3 s",10]],c:"Fesses serrées, côtes basses, biceps près de l'oreille.",t:"Le genou au sol est du côté du bras qui pousse. Pas de cambrure."},
-  glute_bridge:{n:"Pont fessier",knee:0,u:"reps",side:"jambe",L:[["Deux jambes",15],["Une jambe",10],["Une jambe, KB sur la hanche",12],["Une jambe, KB, pause 3 s",12]],c:"Pousse dans le talon, pause en haut.",t:"Aligne épaules, hanches et genou en haut. Serre la fesse au lieu de cambrer le bas du dos."},
-  dead_bug:{n:"Dead bug",knee:0,u:"reps",side:"côté",L:[["Sans KB",6],["KB tenu bras tendus",8],["KB tenu bras tendus",10],["Jambes presque tendues",10]],c:"Bas du dos collé au sol, mouvement lent.",t:"Sur le dos, hanches et genoux à 90°. Tends une jambe vers le sol sans la poser, reviens, alterne."},
-  plank_pull:{n:"Planche, passage du KB",knee:0,u:"reps",side:"côté",L:[["Sur les genoux",6],["Pieds écartés",6],["Pieds écartés",8],["Pieds serrés",10]],c:"Le bassin ne tourne pas quand tu lèves la main.",t:"En planche bras tendus, attrape le KB en passant sous ton corps et tire-le de l'autre côté. Alterne les mains."},
-  hollow:{n:"Hollow hold",knee:0,u:"sec",L:[["Genoux pliés",20],["Jambes tendues",30],["Jambes tendues",40],["Bras derrière la tête",45]],c:"Position banane, bas du dos collé au sol.",t:"Décolle épaules et jambes de quelques centimètres et tiens. Si le dos se décolle, plie les genoux."},
-  side_plank:{n:"Planche latérale",knee:0,u:"sec",side:"côté",L:[["Sur le genou",20],["Jambes tendues",30],["Jambes tendues",40],["KB tenu bras tendu",45]],c:"Tête, bassin et pieds alignés, hanches hautes.",t:"Coude sous l'épaule. Change de côté au signal du milieu."},
-  reverse_crunch:{n:"Relevé de bassin",knee:0,u:"reps",L:[["Relevé de bassin",8],["Relevé de bassin",10],["Relevé de bassin",12],["Descente 3 s",12]],c:"Enroule le bassin sans élan.",t:"Genoux pliés à 90° au-dessus des hanches. Amène les genoux vers la poitrine en décollant les fesses, redescends lentement."},
-  tgu:{n:"Turkish get-up",knee:0,u:"reps",side:"côté",L:[["Demi, jusqu'au coude",2],["Demi, jusqu'à la main",3],["Demi, jusqu'à la main",4],["Complet",2]],c:"Lent, les yeux sur le KB, bras tendu.",t:"Pied du côté du KB au sol genou plié. Roule sur le coude, puis la main, jusqu'à être assis. Redescends dans l'ordre inverse."},
-  wall_sit:{n:"Chaise murale",knee:1,u:"sec",L:[["Deux jambes",30],["Une jambe",20],["Une jambe",30],["Une jambe",45]],c:"Genou à 60–70°, le genou ne rentre pas vers l'intérieur.",t:"Dos contre le mur, un peu moins bas qu'un angle droit. Sur une jambe, change de jambe au signal du milieu."},
-  reverse_nordic:{n:"Reverse Nordic",knee:1,u:"reps",L:[["Avec sangle, petite amplitude",6],["Avec sangle",8],["Sans sangle",6],["KB contre la poitrine",6]],c:"Fesses serrées, hanches et épaules alignées.",t:"À genoux sur un coussin, bascule en bloc en arrière puis reviens avec les quadriceps. Si les hanches se plient, réduis l'amplitude."},
-  cossack:{n:"Squat cosaque",knee:1,u:"reps",side:"côté",L:[["Tenu à un support",4],["KB en contrepoids",5],["KB en contrepoids",6],["KB en contrepoids",8]],c:"Talon au sol, descends seulement jusque-là.",t:"Pieds très écartés. Descends sur une jambe, l'autre tendue sur le côté, pointe vers le haut."},
-  carry:{n:"Marche fermier un bras",knee:0,u:"sec",side:"bras",L:[["Marche",30],["Marche",40],["Marche",50],["Marche",60]],c:"Buste parfaitement droit.",t:"KB le long du corps comme une valise. Change de main au signal du milieu."},
+  goblet_squat:{g:"j",n:"Goblet squat",knee:1,u:"reps",L:[["Descente 3 s",10],["Pause 2 s en bas",12],["Talons surélevés, pause 2 s",12],["Répétitions 1,5",10]],c:"KB contre la poitrine, descends en 3 s, coudes entre les genoux.",t:"Pieds un peu plus larges que les épaules. Descends le plus bas possible en gardant les talons au sol et le dos droit, puis remonte en poussant dans tout le pied."},
+  split_squat:{g:"j",n:"Split squat bulgare",knee:1,u:"reps",side:"jambe",L:[["Fente fixe au sol",8],["Pied arrière sur une chaise",8],["Pied arrière sur une chaise",12],["Répétitions 1,5",8]],c:"Commence par la jambe opérée. Descente 3 s, genou arrière qui frôle le sol.",t:"Le pied arrière sert d'appui, c'est la jambe avant qui pousse. Laisse le genou avant avancer au-delà des orteils s'il le veut."},
+  step_up:{g:"j",n:"Montée de marche",knee:1,u:"reps",side:"jambe",L:[["Marche basse",10],["Box à hauteur de genou",10],["Box genou, descente 4 s",10],["Box haute, descente 3 s",10]],c:"Pousse uniquement avec la jambe du haut, redescends lentement.",t:"KB en goblet. Pose tout le pied sur la box. Le pied resté au sol ne doit presque rien pousser."},
+  reverse_lunge:{g:"j",n:"Fente arrière",knee:1,u:"reps",side:"jambe",L:[["Sans KB",8],["KB en goblet",10],["Pied avant sur une marche",8],["Pied avant sur une marche",12]],c:"Grand pas en arrière, genou arrière qui frôle le sol.",t:"Remonte en poussant dans le talon avant et ramène le pied. Le buste reste droit."},
+  swing:{g:"p",n:"Swing à deux mains",knee:0,u:"reps",L:[["Swing",10],["Swing",15],["Swing",20],["Swing",25]],c:"Mouvement de hanche : les hanches projettent le KB, pas les bras.",t:"Lance le KB entre les jambes, puis pousse les hanches vers l'avant d'un coup sec. Le KB monte à hauteur de poitrine, bras relâchés. Ne plie pas les genoux comme dans un squat."},
+  rdl1:{g:"j",n:"Soulevé de terre roumain, une jambe",knee:0,u:"reps",side:"jambe",L:[["Main sur un mur",8],["Libre",10],["Libre",12],["Pause 2 s en bas",10]],c:"KB dans la main opposée, dos plat, la jambe libre recule.",t:"Penche le buste comme une balançoire jusqu'à sentir l'arrière de la cuisse. Les hanches restent face au sol. Remonte en serrant la fesse."},
+  pushup:{g:"h",n:"Pompes",knee:0,u:"reps",L:[["Mains surélevées",10],["Au sol",10],["Au sol",15],["Pieds surélevés",12]],c:"Corps gainé, coudes à 45°.",t:"Descends la poitrine à quelques centimètres du sol puis repousse. Le bassin ne tombe pas."},
+  row:{g:"h",n:"Rowing un bras",knee:0,u:"reps",side:"bras",L:[["Rowing",10],["Rowing",12],["Rowing",15],["Descente 3 s",12]],c:"Main libre sur une chaise, coude vers la hanche.",t:"Dos plat et parallèle au sol. Tire le KB vers la hanche en serrant l'omoplate, sans tourner le buste."},
+  press:{g:"h",n:"Développé un bras, genou au sol",knee:0,u:"reps",side:"bras",L:[["Développé",8],["Développé",10],["Développé",12],["Descente 3 s",10]],c:"Fesses serrées, côtes basses, biceps près de l'oreille.",t:"Le genou au sol est du côté du bras qui pousse. Pas de cambrure."},
+  glute_bridge:{g:"j",n:"Pont fessier",knee:0,u:"reps",side:"jambe",L:[["Deux jambes",15],["Une jambe",10],["Une jambe, KB sur la hanche",12],["Une jambe, KB, pause 3 s",12]],c:"Pousse dans le talon, pause en haut.",t:"Aligne épaules, hanches et genou en haut. Serre la fesse au lieu de cambrer le bas du dos."},
+  dead_bug:{g:"a",n:"Dead bug",knee:0,u:"reps",side:"côté",L:[["Sans KB",6],["KB tenu bras tendus",8],["KB tenu bras tendus",10],["Jambes presque tendues",10]],c:"Bas du dos collé au sol, mouvement lent.",t:"Sur le dos, hanches et genoux à 90°. Tends une jambe vers le sol sans la poser, reviens, alterne."},
+  plank_pull:{g:"a",n:"Planche, passage du KB",knee:0,u:"reps",side:"côté",L:[["Sur les genoux",6],["Pieds écartés",6],["Pieds écartés",8],["Pieds serrés",10]],c:"Le bassin ne tourne pas quand tu lèves la main.",t:"En planche bras tendus, attrape le KB en passant sous ton corps et tire-le de l'autre côté. Alterne les mains."},
+  hollow:{g:"a",n:"Hollow hold",knee:0,u:"sec",L:[["Genoux pliés",20],["Jambes tendues",30],["Jambes tendues",40],["Bras derrière la tête",45]],c:"Position banane, bas du dos collé au sol.",t:"Décolle épaules et jambes de quelques centimètres et tiens. Si le dos se décolle, plie les genoux."},
+  side_plank:{g:"a",n:"Planche latérale",knee:0,u:"sec",side:"côté",L:[["Sur le genou",20],["Jambes tendues",30],["Jambes tendues",40],["KB tenu bras tendu",45]],c:"Tête, bassin et pieds alignés, hanches hautes.",t:"Coude sous l'épaule. Change de côté au signal du milieu."},
+  reverse_crunch:{g:"a",n:"Relevé de bassin",knee:0,u:"reps",L:[["Relevé de bassin",8],["Relevé de bassin",10],["Relevé de bassin",12],["Descente 3 s",12]],c:"Enroule le bassin sans élan.",t:"Genoux pliés à 90° au-dessus des hanches. Amène les genoux vers la poitrine en décollant les fesses, redescends lentement."},
+  tgu:{g:"a",n:"Turkish get-up",knee:0,u:"reps",side:"côté",L:[["Demi, jusqu'au coude",2],["Demi, jusqu'à la main",3],["Demi, jusqu'à la main",4],["Complet",2]],c:"Lent, les yeux sur le KB, bras tendu.",t:"Pied du côté du KB au sol genou plié. Roule sur le coude, puis la main, jusqu'à être assis. Redescends dans l'ordre inverse."},
+  wall_sit:{g:"j",n:"Chaise murale",knee:1,u:"sec",L:[["Deux jambes",30],["Une jambe",20],["Une jambe",30],["Une jambe",45]],c:"Genou à 60–70°, le genou ne rentre pas vers l'intérieur.",t:"Dos contre le mur, un peu moins bas qu'un angle droit. Sur une jambe, change de jambe au signal du milieu."},
+  reverse_nordic:{g:"j",n:"Reverse Nordic",knee:1,u:"reps",L:[["Avec sangle, petite amplitude",6],["Avec sangle",8],["Sans sangle",6],["KB contre la poitrine",6]],c:"Fesses serrées, hanches et épaules alignées.",t:"À genoux sur un coussin, bascule en bloc en arrière puis reviens avec les quadriceps. Si les hanches se plient, réduis l'amplitude."},
+  cossack:{g:"j",n:"Squat cosaque",knee:1,u:"reps",side:"côté",L:[["Tenu à un support",4],["KB en contrepoids",5],["KB en contrepoids",6],["KB en contrepoids",8]],c:"Talon au sol, descends seulement jusque-là.",t:"Pieds très écartés. Descends sur une jambe, l'autre tendue sur le côté, pointe vers le haut."},
+  pistol:{n:"Squat une jambe sur chaise",knee:1,u:"reps",side:"jambe",g:"j",L:[["Chaise haute, main sur un appui",5],["Chaise standard, main sur un appui",5],["Chaise standard, sans appui",6],["KB en contrepoids, sans appui",8]],c:"Sur une jambe, descends en 3 s jusqu'à effleurer la chaise, puis remonte sans t'asseoir.",t:"L'autre jambe reste tendue devant toi. Garde le genou dans l'axe du pied : il peut avancer au-delà des orteils. Si le genou gêne, prends un siège plus haut ou garde l'appui."},
+  /* Retiré des séances (sans intérêt à 8 kg et impossible en intérieur), gardé pour lire les anciennes séances. */
+  carry:{hide:1,n:"Marche fermier un bras",knee:0,u:"sec",side:"bras",L:[["Marche",30],["Marche",40],["Marche",50],["Marche",60]],c:"Buste parfaitement droit.",t:"KB le long du corps comme une valise. Change de main au signal du milieu."},
   /* Mobilité (pas d'adaptation) */
   patella_mob:{n:"Mobilisation de la rotule",fixed:1,u:"sec",L:[["Haut, bas, côtés",60]],c:"Jambe tendue et relâchée, fais glisser la rotule sans douleur.",t:""},
   rock:{n:"Balancier vers les talons",fixed:1,u:"sec",L:[["À quatre pattes",60]],c:"Recule les fesses vers les talons, tiens 20 s en bas à la fin.",t:""},
@@ -163,20 +165,79 @@ const WARMUP=["w_march","w_arms","w_hinge","w_squat"];
 const KGS=[4,6,8,10,12,14,16,18,20,24];
 const WORKOUTS = [
   {id:"galibier",name:"Galibier",alt:2642,mode:"chrono",rounds:4,ex:["goblet_squat","pushup","swing","dead_bug"],focus:"Corps entier, pour le temps"},
-  {id:"izoard",name:"Izoard",alt:2360,mode:"chrono",rounds:3,ex:["step_up","row","rdl1","side_plank","carry"],focus:"Une jambe et tirage, pour le temps"},
+  {id:"izoard",name:"Izoard",alt:2360,mode:"chrono",rounds:3,ex:["step_up","row","rdl1","side_plank","pistol"],focus:"Une jambe et tirage, pour le temps"},
   {id:"tourmalet",name:"Tourmalet",alt:2115,mode:"intervals",work:40,rest:20,rounds:4,ex:["split_squat","swing","press","glute_bridge","reverse_crunch"],focus:"Intervalles 40 s / 20 s, 20 min"},
   {id:"ventoux",name:"Ventoux",alt:1910,mode:"chrono",rounds:3,ex:["dead_bug","plank_pull","hollow","side_plank","reverse_crunch","tgu"],focus:"Abdos, pour le temps"},
   {id:"aubisque",name:"Aubisque",alt:1709,mode:"series",rest:60,rounds:3,ex:["reverse_nordic","split_squat","cossack","wall_sit","reverse_lunge"],focus:"Quadriceps sous étirement, séries"},
   {id:"croix-rousse",name:"Croix-Rousse",alt:254,mode:"chrono",rounds:1,ex:["patella_mob","rock","couch","deep_squat","calf"],focus:"Routine genou, 8 min",daily:1}
 ];
+/* Cols célèbres pour le générateur : plus la séance est longue, plus le col est haut. */
+const COLS=[
+  ["bonette","Bonette",2802,"Alpes"],["iseran","Iseran",2764,"Alpes"],["stelvio","Stelvio",2757,"Italie"],["agnel","Agnel",2744,"Alpes"],
+  ["gavia","Gavia",2621,"Italie"],["loze","La Loze",2304,"Alpes"],["portet","Portet",2215,"Pyrénées"],["vars","Vars",2109,"Alpes"],
+  ["mont-cenis","Mont-Cenis",2083,"Alpes"],["croix-de-fer","Croix de Fer",2067,"Alpes"],["lautaret","Lautaret",2058,"Alpes"],["madeleine","Madeleine",2000,"Alpes"],
+  ["sarenne","Sarenne",1999,"Alpes"],["glandon","Glandon",1924,"Alpes"],["mortirolo","Mortirolo",1852,"Italie"],["alpe-d-huez","Alpe d'Huez",1850,"Alpes"],
+  ["chamrousse","Chamrousse",1730,"Belledonne"],["joux-plane","Joux Plane",1691,"Alpes"],["colombiere","Colombière",1613,"Alpes"],["angliru","Angliru",1573,"Espagne"],
+  ["peyresourde","Peyresourde",1569,"Pyrénées"],["telegraphe","Télégraphe",1566,"Alpes"],["grand-colombier","Grand Colombier",1501,"Jura"],["aspin","Aspin",1489,"Pyrénées"],["aravis","Aravis",1486,"Alpes"]
+];
+const FOCUS={corps:"Corps entier",jambes:"Jambes",haut:"Haut du corps",abdos:"Abdos"};
+const DEF_GEN={min:20,focus:"corps",mode:"chrono",knee:false};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function genExercises(focus,spare,big){
+  const x=big?1:0;
+  const pool=g=>shuffle(Object.keys(EX).filter(id=>EX[id].g===g&&!(spare&&EX[id].knee)));
+  const J=pool("j"),H=pool("h"),A=pool("a"),P=pool("p");
+  let legs=[],other=[];
+  if(focus==="corps"){legs=J.slice(0,2+x);other=[...H.slice(0,1),...P,...A.slice(0,1+x)];}
+  else if(focus==="jambes"){legs=J.slice(0,(spare?3:4)+x);other=[...(spare?P:[]),...A.slice(0,1+x)];}
+  else if(focus==="haut"){other=[...H.slice(0,3),...A.slice(0,2+x)];}
+  else other=A.slice(0,5+x);
+  /* Alterne jambes et reste du corps pour laisser souffler les muscles. */
+  const out=[];while(legs.length||other.length){if(legs.length)out.push(legs.shift());if(other.length)out.push(other.shift());}
+  return out;
+}
+function genWorkout(opt){
+  const ex=genExercises(opt.focus,opt.knee,opt.min>=30);
+  const w={custom:1,mode:opt.mode,rounds:1,ex,work:40,rest:opt.mode==="series"?45:20};
+  let best=1,gap=Infinity;
+  for(let r=1;r<=6;r++){w.rounds=r;const d=Math.abs(estimate(w,false)/60-opt.min);if(d<gap){gap=d;best=r;}}
+  w.rounds=best;
+  const band=opt.min>=30?c=>c[2]>=2300:opt.min>=20?c=>c[2]>=1800&&c[2]<2300:c=>c[2]<1800;
+  const taken=new Set(S.custom.map(x=>x.col));
+  const pick=shuffle(COLS.filter(band)).sort((a,b)=>taken.has(a[0])-taken.has(b[0]))[0];
+  const how={chrono:"pour le temps",intervals:"intervalles 40 s / 20 s",series:"séries"}[opt.mode];
+  Object.assign(w,{id:"g-"+pick[0]+"-"+Date.now().toString(36),col:pick[0],name:pick[1],alt:pick[2],region:pick[3],
+    focus:FOCUS[opt.focus]+", "+how+(opt.knee?", genou épargné":"")});
+  return w;
+}
+const allW=()=>WORKOUTS.concat(S.custom);
+const findW=id=>(draft&&draft.id===id?draft:null)||allW().find(w=>w.id===id);
+let draft=null;
+function renderGen(app){
+  const o=S.settings.gen=S.settings.gen||{...DEF_GEN};
+  const grp=(key,label,opts,cols)=>`<div class="card"><h2>${label}</h2><div class="choices" style="grid-template-columns:repeat(${cols},1fr)">${opts.map(([v,l])=>`<button data-g="${key}" data-v="${v}" aria-pressed="${String(o[key])===String(v)}">${l}</button>`).join("")}</div></div>`;
+  app.innerHTML=`<div class="wrap"><div><button class="linkbtn" id="back">← Tous les cols</button></div>
+  <header><div class="muted small">Générateur de parcours</div><h1>Choisis ton col</h1></header>
+  <p class="muted small" style="margin:0">L'appli tire des exercices de ta bibliothèque, à tes niveaux actuels, et donne au parcours le nom d'un col célèbre : plus la séance est longue, plus le col est haut.</p>
+  ${grp("min","Durée",[[15,"15 min"],[20,"20 min"],[30,"30 min"]],3)}
+  ${grp("focus","Objectif",Object.entries(FOCUS),2)}
+  ${grp("mode","Format",[["chrono","Pour le temps"],["intervals","Intervalles"],["series","Séries"]],3)}
+  <div class="card">${toggleRow("tgKnee",o.knee,"Épargner le genou","Aucun exercice qui charge le genou")}</div>
+  <button class="btn" id="doGen">Tirer un col</button></div>`;
+  $("#back").onclick=()=>{view="home";render();};
+  app.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const k=b.dataset.g;o[k]=k==="min"?+b.dataset.v:b.dataset.v;saveLocal();renderGen(app);});
+  $("#tgKnee").onclick=()=>{o.knee=!o.knee;saveLocal();renderGen(app);};
+  $("#doGen").onclick=()=>{draft=genWorkout(o);pv=draft.id;view="preview";render();window.scrollTo(0,0);};
+}
 const MODE_LABEL={chrono:"Pour le temps",intervals:"Intervalles",series:"Séries"};
 
 /* ---------- Stockage ---------- */
 const LS="kbcoach.v1";
 const DEF_SET={voice:true,warm:true,kg:8};
-let S={levels:{},streak:{},sessions:[],settings:{...DEF_SET}};
+let S={levels:{},streak:{},sessions:[],custom:[],settings:{...DEF_SET}};
 let db=null, syncState="local";
-function loadLocal(){try{const r=localStorage.getItem(LS);if(r){const o=JSON.parse(r);S.levels=o.levels||{};S.streak=o.streak||{};S.sessions=o.sessions||[];S.settings={...DEF_SET,...(o.settings||{})};}}catch(e){}}
+function loadLocal(){try{const r=localStorage.getItem(LS);if(r){const o=JSON.parse(r);S.levels=o.levels||{};S.streak=o.streak||{};S.sessions=o.sessions||[];S.settings={...DEF_SET,...(o.settings||{})};S.custom=(o.custom||[]).filter(w=>w&&w.id&&Array.isArray(w.ex)&&w.ex.every(id=>EX[id]));}}catch(e){}
+  S.settings.gen={...DEF_GEN,...(S.settings.gen||{})};}
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
 function lvl(id){const e=EX[id];const v=S.levels[id];return Math.max(0,Math.min(e.L.length-1,typeof v==="number"?v:0));}
 async function initDb(){
@@ -192,11 +253,11 @@ async function initDb(){
     const q=await db.collection("sessions").orderBy("date","desc").limit(200).get();
     clearTimeout(timer);
     if(p.exists||!q.empty){
-      const d=p.data()||{};S.levels=d.levels||{};S.streak=d.streak||{};
+      const d=p.data()||{};S.levels=d.levels||{};S.streak=d.streak||{};if(Array.isArray(d.custom))S.custom=d.custom;
       S.sessions=q.docs.map(x=>x.data());
       saveLocal();
     }else if(S.sessions.length||Object.keys(S.levels).length){
-      await db.doc("state/progress").set({levels:S.levels,streak:S.streak,updatedAt:new Date().toISOString()});
+      await db.doc("state/progress").set({levels:S.levels,streak:S.streak,custom:S.custom,updatedAt:new Date().toISOString()});
       for(const s of S.sessions){await db.collection("sessions").doc(s.id).set(s);}
     }
     syncState="db";
@@ -207,7 +268,7 @@ async function persist(session){
   saveLocal();
   if(!db||syncState!=="db")return;
   try{
-    await db.doc("state/progress").set({levels:S.levels,streak:S.streak,updatedAt:new Date().toISOString()});
+    await db.doc("state/progress").set({levels:S.levels,streak:S.streak,custom:S.custom,updatedAt:new Date().toISOString()});
     if(session)await db.collection("sessions").doc(session.id).set(session);
   }catch(e){syncState="local";render();}
 }
@@ -264,14 +325,14 @@ function clearRun(){try{localStorage.removeItem(RUNKEY);}catch(e){}}
 function pendingRun(){
   try{
     const o=JSON.parse(localStorage.getItem(RUNKEY)||"null");
-    if(!o||!WORKOUTS.some(w=>w.id===o.wid)||Date.now()-o.at>12*3600*1000)return null;
+    if(!o||!findW(o.wid)||Date.now()-o.at>12*3600*1000)return null;
     if(!o.done&&(!Array.isArray(o.steps)||!o.steps[o.i]))return null;
     return o;
   }catch(e){return null}
 }
 function resumeRun(){
   const o=pendingRun();if(!o)return render();
-  const w=WORKOUTS.find(x=>x.id===o.wid);
+  const w=findW(o.wid);
   if(o.done){fb={w,dur:o.dur,work:o.work||o.dur,difficulty:null,knee:0,start:o.start,hr:o.hr||null};view="feedback";return render();}
   audioOn();
   run={w,steps:o.steps,i:o.i,t0:Date.now()-o.el*1000,hr:o.hr||[],startIso:o.start,paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,off:o.off??o.warmSec??0,lastSave:Date.now()};
@@ -281,7 +342,7 @@ function resumeRun(){
 }
 function pendingCard(){
   const o=pendingRun();if(!o)return "";
-  const w=WORKOUTS.find(x=>x.id===o.wid);
+  const w=findW(o.wid);
   const txt=o.done?"Terminée en "+fmt(o.work||o.dur)+", mais pas encore notée ni enregistrée.":"Arrêtée à l'étape "+(o.i+1)+" sur "+o.steps.length+", après "+fmt(o.el)+".";
   return `<div class="card" style="border:2px solid var(--accent)"><h2>${o.done?"Séance à enregistrer":"Séance interrompue"}</h2><div><strong>${esc(w.name)}</strong> · <span class="muted">${dfmt(o.start)}</span></div><div class="small muted">${txt}</div>
   <div class="row"><button class="btn" id="resume" style="flex:1;font-size:18px;padding:12px">${o.done?"Noter et enregistrer":"Reprendre"}</button><button class="linkbtn" id="dropRun">Abandonner</button></div></div>`;
@@ -309,6 +370,7 @@ const FIG={
   wall_sit:{h:[47,25],s:[45,34],p:[45,54],L:[[63,54,63,72]],A:[[52,44,60,51]],pr:[["l",40,8,40,72]]},
   reverse_nordic:{h:[39,29],s:[44,38],p:[54,56],L:[[62,72,42,72]],A:[[50,46,46,42]],ar:[62,38,50,30]},
   cossack:{h:[56,29],s:[56,38],p:[54,58],L:[[40,58,44,72],[72,64,90,69]],A:[[60,48,66,45]],kb:[70,44],ar:[70,54,54,54]},
+  pistol:{h:[64,27],s:[59,36],p:[46,52],L:[[62,54,56,72],[66,50,88,48]],A:[[68,40,78,40]],kb:[84,40],pr:[["r",24,52,22,4],["l",26,56,26,72],["l",44,56,44,72],["l",26,52,24,30]],ar:[14,32,14,46]},
   carry:{h:[58,12],s:[58,21],p:[58,41],L:[[64,56,68,72],[54,57,48,72]],A:[[60,32,61,43],[55,31,53,41]],kb:[61,49],ar:[78,44,94,44]},
   patella_mob:{h:[47,37],s:[45,46],p:[40,68],L:[[62,68,84,68]],A:[[54,54,61,63]]},
   rock:{h:[90,52],s:[81,56],p:[54,58],L:[[58,72,40,72]],A:[[83,64,85,72]],ar:[66,46,50,46]},
@@ -495,7 +557,7 @@ async function saveFile(name,data,type,btn){
   }
 }
 function exportJson(btn){
-  const out={app:"coach-kettlebell",version:1,exportedAt:new Date().toISOString(),levels:S.levels,streak:S.streak,settings:S.settings,sessions:S.sessions};
+  const out={app:"coach-kettlebell",version:1,exportedAt:new Date().toISOString(),levels:S.levels,streak:S.streak,settings:S.settings,custom:S.custom,sessions:S.sessions};
   saveFile("coach-kettlebell_"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(out,null,1),"application/json",btn);
 }
 let importMsg="";
@@ -508,10 +570,12 @@ async function importJson(file){
     const newestFile=o.sessions.reduce((m,s)=>Math.max(m,new Date(s.date).getTime()||0),0);
     const newestHere=S.sessions.reduce((m,s)=>Math.max(m,new Date(s.date).getTime()||0),0);
     if(newestFile>newestHere){S.levels=o.levels||S.levels;S.streak=o.streak||S.streak;if(o.settings)S.settings={...DEF_SET,...o.settings};}
+    const haveW=new Set(S.custom.map(w=>w.id));
+    if(Array.isArray(o.custom))S.custom=S.custom.concat(o.custom.filter(w=>w&&w.id&&!haveW.has(w.id)&&Array.isArray(w.ex)&&w.ex.every(id=>EX[id])));
     S.sessions=S.sessions.concat(added).sort((a,b)=>new Date(b.date)-new Date(a.date));
     saveLocal();
     if(db&&syncState==="db"){
-      try{await db.doc("state/progress").set({levels:S.levels,streak:S.streak,updatedAt:new Date().toISOString()});
+      try{await db.doc("state/progress").set({levels:S.levels,streak:S.streak,custom:S.custom,updatedAt:new Date().toISOString()});
         for(const s of added)await db.collection("sessions").doc(s.id).set(s);}catch(e){syncState="local";}
     }
     importMsg=added.length?added.length+" séance(s) importée(s)."+(newestFile>newestHere?" Niveaux repris du fichier, plus récent.":" Niveaux actuels conservés, plus récents que le fichier."):"Aucune nouvelle séance : tout était déjà là.";
@@ -523,6 +587,7 @@ async function importJson(file){
 let view="home",tab="seances",run=null,fb=null,pv=null;
 function render(){
   const app=$("#app");
+  if(view==="gen")return renderGen(app);
   if(view==="preview")return renderPreview(app);
   if(view==="player")return renderPlayer(app);
   if(view==="feedback")return renderFeedback(app);
@@ -540,6 +605,7 @@ function render(){
   app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
   app.querySelectorAll("[data-start]").forEach(b=>b.onclick=()=>{pv=b.dataset.start;view="preview";render();window.scrollTo(0,0);});
   const rs=$("#resume");if(rs)rs.onclick=resumeRun;
+  const og=$("#openGen");if(og)og.onclick=()=>{view="gen";render();window.scrollTo(0,0);};
   const dr=$("#dropRun");if(dr)dr.onclick=()=>{clearRun();render();};
   app.querySelectorAll("[data-kg]").forEach(b=>b.onclick=()=>{const i=KGS.indexOf(S.settings.kg),j=Math.max(0,Math.min(KGS.length-1,(i<0?2:i)+(+b.dataset.kg)));S.settings.kg=KGS[j];saveLocal();render();});
   app.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{const id=b.dataset.lv,d=+b.dataset.d;S.levels[id]=Math.max(0,Math.min(EX[id].L.length-1,lvl(id)+d));persist();render();});
@@ -548,7 +614,7 @@ function borne(w,sug){
   const pb=best(w.id),last=sessionsOf(w.id)[0];
   const meta=[MODE_LABEL[w.mode],w.rounds>1?w.rounds+" tours":"",pb?"Record "+fmt(pb):"",last?"Dernière : "+dfmt(last.date):"Jamais faite"].filter(Boolean);
   return `<button class="borne${sug?" suggest":""}" data-start="${w.id}" aria-label="Voir ${esc(w.name)}">
-    <span class="band"><span>${sug?"Conseillée aujourd'hui":"Col"}</span><span class="num">${w.alt} m</span></span>
+    <span class="band"><span>${sug?"Conseillée aujourd'hui":w.custom?"Généré · "+esc(w.region):"Col"}</span><span class="num">${w.alt} m</span></span>
     <span class="bd"><span class="name">${esc(w.name)}</span><span>${esc(w.focus)}</span><span class="meta">${meta.map(esc).join(" · ")}</span></span></button>`;
 }
 function homeTab(){
@@ -557,7 +623,9 @@ function homeTab(){
   if(last&&last.knee>=4)h+=`<div class="alert">Genou à ${last.knee}/10 la dernière fois. Séance sans charge sur le genou conseillée, et parles-en à ton kiné si ça persiste.</div>`;
   h+=pendingCard();
   h+=hrCard();
+  h+=`<button class="btn ghost" id="openGen">＋ Générer un parcours</button>`;
   h+=`<div class="list">${borne(sug,true)}${WORKOUTS.filter(w=>w!==sug).map(w=>borne(w,false)).join("")}</div>`;
+  if(S.custom.length)h+=`<h2>Tes cols générés</h2><div class="list">${S.custom.map(w=>borne(w,false)).join("")}</div>`;
   h+=`<p class="muted small">Après chaque séance, note la difficulté et ton genou : les répétitions et les variantes s'ajustent pour la suivante. Une gêne au genou au-dessus de 3/10 fait baisser les exercices qui le chargent.</p>`;
   return h;
 }
@@ -604,7 +672,7 @@ function statsCard(){
     <text class="v" x="${x1+4}" y="${Math.abs(y(lastK)-y(3))<12?y(lastK)-10:y(lastK)+4}">${lastK}/10</text></svg>`;
   }
   /* Records : évolution des temps */
-  const recs=WORKOUTS.filter(w=>w.mode==="chrono"&&!w.daily).map(w=>{
+  const recs=allW().filter(w=>w.mode==="chrono"&&!w.daily).map(w=>{
     const l=sessionsOf(w.id).filter(s=>s.durationSec).slice().reverse().map(wsec);
     if(!l.length)return "";
     return `<div class="row"><span>${esc(w.name)}</span><span class="row">${l.length>1?sparkline(l.slice(-10),Math.min(...l),Math.max(...l)):""}<span class="num small">${l.length>1?fmt(l[0])+" → ":""}<strong>${fmt(Math.min(...l))}</strong></span></span></div>`;
@@ -619,7 +687,6 @@ function histoTab(){
 }
 function histoList(){
   if(!S.sessions.length)return `<div class="card"><h2>Aucune séance</h2><p class="muted">Lance ton premier col depuis l'onglet Séances. Tes temps et tes notes apparaîtront ici.</p></div>`;
-  const pbs=WORKOUTS.filter(w=>best(w.id)).map(w=>`<div class="row"><span>${esc(w.name)}</span><span class="num">${fmt(best(w.id))}</span></div>`).join("");
   const dl={facile:["Trop facile","good"],parfait:["Parfait","good"],dur:["Trop dur","warn"]};
   return `<div class="list">${S.sessions.slice(0,60).map(s=>{
     const k=s.knee>=4?"bad":s.knee>=2?"warn":"good";
@@ -630,7 +697,7 @@ function histoList(){
     <p class="note">Chaque export donne un fichier .fit (séance de renforcement). Importe-le depuis le site web de Strava (+ → Importer une activité → Fichier) ou d'intervals.icu (page Activités) : les applis mobiles ne savent pas importer de fichier.</p>`;
 }
 function levelsTab(){
-  const ids=Object.keys(EX).filter(id=>!EX[id].fixed);
+  const ids=Object.keys(EX).filter(id=>!EX[id].fixed&&!EX[id].hide);
   return `<div class="card"><div class="row"><div><strong>Poids du kettlebell</strong><div class="small muted">Enregistré avec chaque séance. Si tu passes à plus lourd, baisse d'un cran les exercices difficiles.</div></div>
     <div class="lvl"><button data-kg="-1" aria-label="Kettlebell plus léger">−</button><strong class="num" style="min-width:52px;text-align:center">${S.settings.kg} kg</strong><button data-kg="1" aria-label="Kettlebell plus lourd">+</button></div></div></div>
   <p class="muted small">Le niveau monte et descend tout seul selon tes retours. Tu peux aussi l'ajuster ici.</p><div class="list">${ids.map(id=>{const e=EX[id],l=lvl(id);
@@ -675,27 +742,31 @@ function estimate(w,warm){
 function audioOn(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume();}catch(e){}}
 function toggleRow(id,on,title,sub){return `<button class="toggle" id="${id}" aria-pressed="${!!on}"><span><strong>${title}</strong><span class="small muted" style="display:block">${sub}</span></span><span class="sw" aria-hidden="true"></span></button>`;}
 function renderPreview(app){
-  const w=WORKOUTS.find(x=>x.id===pv),warm=S.settings.warm&&!w.daily;
+  const w=findW(pv),warm=S.settings.warm&&!w.daily,isDraft=draft&&draft.id===w.id;
   const mins=Math.max(1,Math.round(estimate(w,warm)/60));
   const rule=w.mode==="intervals"?w.work+" s d'effort, "+w.rest+" s de repos":w.mode==="series"?w.rest+" s de repos entre les exercices":"Pas de récupération : "+TRANS+" s de transition entre les exercices pour te mettre en place, hors chrono";
   const exs=w.ex.map(id=>{const e=EX[id];return `<div class="exrow">${fig(id,"thumb")}<div><strong>${esc(e.n)}</strong>${e.knee?' <span class="pill warn">genou</span>':""}<div class="small muted">${esc(e.L[lvl(id)][0])} · ${w.mode==="intervals"?w.work+" s":amountTxt(id)}</div></div></div>`;}).join("");
   const wu=warm?`<div class="card"><h2>Échauffement</h2><div class="small muted">Sans charge, ${fmt(WARMUP.reduce((a,id)=>a+EX[id].L[0][1],0))}. Ne compte pas dans ton temps.</div>${WARMUP.map(id=>`<div class="exrow">${fig(id,"thumb")}<div><strong>${esc(EX[id].n)}</strong><div class="small muted">${EX[id].L[0][1]} s</div></div></div>`).join("")}</div>`:"";
-  app.innerHTML=`<div class="wrap"><div><button class="linkbtn" id="back">← Tous les cols</button></div>
-  <div class="borne"><span class="band"><span>${MODE_LABEL[w.mode]}</span><span class="num">${w.alt} m</span></span>
+  app.innerHTML=`<div class="wrap"><div class="row"><button class="linkbtn" id="back">${isDraft?"← Réglages du tirage":"← Tous les cols"}</button>${isDraft?`<button class="linkbtn" id="reroll">↻ Autre tirage</button>`:w.custom?`<button class="linkbtn" id="dropW">Retirer de mes cols</button>`:""}</div>
+  <div class="borne"><span class="band"><span>${w.custom?esc(w.region)+" · ":""}${MODE_LABEL[w.mode]}</span><span class="num">${w.alt} m</span></span>
   <span class="bd"><span class="name">${esc(w.name)}</span><span>${esc(w.focus)}</span><span class="meta">${["Environ "+mins+" min",w.rounds>1?w.rounds+" tours":"",S.settings.kg+" kg"].filter(Boolean).join(" · ")}</span></span></div>
   <div class="card">${w.daily?"":toggleRow("tgWarm",S.settings.warm,"Échauffement","Environ 2 minutes avant la séance")}${toggleRow("tgVoice",S.settings.voice,"Annonces vocales","L'exercice suivant et les changements de côté sont dits à voix haute")}</div>
   ${wu}
   <div class="card"><div class="row"><h2>${w.rounds>1?w.rounds+" tours de":"Exercices"}</h2><span class="small muted">${w.ex.length} exercices</span></div><div class="small muted">${rule}.</div>${exs}</div>
   ${hrCard()}
   <button class="btn sticky" id="startW">Démarrer</button></div>`;
-  $("#back").onclick=()=>{view="home";render();};
+  $("#back").onclick=()=>{if(isDraft){draft=null;view="gen";}else view="home";render();};
   $("#startW").onclick=()=>startWorkout(w.id);
+  const rr=$("#reroll");if(rr)rr.onclick=()=>{draft=genWorkout(S.settings.gen);pv=draft.id;render();window.scrollTo(0,0);};
+  const dw=$("#dropW");if(dw)dw.onclick=()=>{if(dw.dataset.arm){S.custom=S.custom.filter(x=>x.id!==w.id);persist();view="home";render();}else{dw.dataset.arm=1;dw.textContent="Appuie encore pour retirer (l'historique reste)";}};
   const tw=$("#tgWarm");if(tw)tw.onclick=()=>{S.settings.warm=!S.settings.warm;saveLocal();render();};
   $("#tgVoice").onclick=()=>{S.settings.voice=!S.settings.voice;saveLocal();render();if(S.settings.voice)say("Annonces vocales activées");};
   const hc=$("#hrc");if(hc)hc.onclick=connectHr;const hx=$("#hrx");if(hx)hx.onclick=()=>hrDisconnect();
 }
 function startWorkout(wid){
-  const w=WORKOUTS.find(x=>x.id===wid);
+  const w=findW(wid);
+  /* Un col tiré au sort rejoint « Tes cols » dès qu'on le lance : son historique et ses records restent liés. */
+  if(draft&&draft.id===w.id){S.custom.unshift(draft);draft=null;persist();}
   audioOn();
   run={w,steps:buildSteps(w,S.settings.warm),i:0,t0:Date.now(),hr:[],startIso:new Date().toISOString(),paused:0,pauseAt:0,stepStart:Date.now(),lastBeep:-1,half:false,tick:null,off:0,lastSave:0};
   keepAwake(true);beep(660,.2);
