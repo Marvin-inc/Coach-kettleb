@@ -1,5 +1,5 @@
 /* Service worker : l'app fonctionne hors ligne une fois ouverte une première fois. */
-const CACHE = "coach-kb-v9";
+const CACHE = "coach-kb-v10";
 const ASSETS = ["./", "index.html", "manifest.webmanifest", "favicon.png",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/icon.svg",
   "fonts/barlow-latin-400-normal.woff2", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2",
